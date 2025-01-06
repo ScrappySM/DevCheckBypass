@@ -1,12 +1,12 @@
 {
   "$schema": "https://raw.githubusercontent.com/ScrappySM/CarbonLauncher/refs/heads/main/schema.json",
 
-  "name": "ModTemplate",
-  "url": "https://github.com/ScrappySM/ModTemplate",
+  "name": "DevCheckBypass",
+  "url": "https://github.com/ScrappySM/DevCheckBypass",
 
   "authors": [
     "BenMcAvoy"
   ],
 
-  "description": "A template for creating mods for Scrap Mechanic."
+  "description": "This mod disabled the dev check in the game stopping you from joining someone who does or doesn't have dev mode enabled."
 }

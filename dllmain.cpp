@@ -1,32 +1,31 @@
+// How the mod works:
+// The game has a check that is ran whilst joining another player/server that compares the clients flag to the servers flag.
+// If the flags don't match, the game will kick the player.
+// This mod bypasses that check by nopping the instruction that jumps after the comparison of the two flags.
+
+// Here's a brief snippet of the assembly in the function
+// .text:000000014042CE97 0F B6 05 99 A6 E3 00    movzx   eax, cs:byte_141267537 ; Move with Zero-Extend
+// .text:000000014042CE9E 41 38 46 78             cmp     [r14+78h], al   ; Compare Two Operands
+// .text:000000014042CEA2 0F 85 89 0A 00 00       jnz     loc_14042D931   ; Jump if Not Zero (ZF=0) <--- This is the instruction we want to nop
+
+// Here's what we do to it
+// .text:000000014042CE97 0F B6 05 99 A6 E3 00    movzx   eax, cs:byte_141267537 ; Move with Zero-Extend
+// .text:000000014042CE9E 41 38 46 78             cmp     [r14+78h], al   ; Compare Two Operands
+// .text:000000014042CEA2 90 90 90 90 90 90       nop nop nop nop nop nop ; No operation <--- We replace it with **6** nops because the original instruction is 6 bytes long and nop is 1 byte long
+
+// How to update the offset:
+// You can find this function (assuming you're using IDA) by searching for the string "mismatching developer mode flags" in the strings window.
+// You should then X-Ref the string and find the function that references it.
+// Then select the if statement that checks the flags and synchronise a disassembly view with the decompiled view.
+// You should then see the jnz instruction that we want to nop.
+// The offset is the address of the jnz instruction minus the base address of the module (0x140000000 in this case).
+
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
+#include <cstdint>
 
-#include <spdlog/spdlog.h>
-
-#include <functional>
-#include <thread>
-
-/// <summary>
-/// Main entry point for the DLL, starts the main function in a new thread
-/// </summary>
-/// <param name="lpReserved">Reserved</param>
-/// <returns>0 on success</returns>
-int main(LPVOID lpReserved) {
-	HMODULE hModule = static_cast<HMODULE>(lpReserved);
-
-	// Put your main code here
-	spdlog::info("Hello from the template!");
-
-	// Example: You can put a while loop here to keep the DLL loaded!
-	while (!GetAsyncKeyState(VK_END)) {
-	    std::this_thread::sleep_for(std::chrono::milliseconds(100));
-	}
-
-	spdlog::info("Exiting...");
-	FreeLibraryAndExitThread(hModule, 0);
-
-	return 0;
-}
+// The offset of the instruction we want to nop
+static constexpr uintptr_t pOffset = 0x42CEA2;
 
 /// <summary>
 /// Entry point for the DLL
@@ -36,25 +35,28 @@ int main(LPVOID lpReserved) {
 /// <param name="lpReserved"></param>
 /// <returns>TRUE on success</returns>
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD dwReason, LPVOID lpReserved) {
-	static DWORD dwThreadId = 0;
-	BOOL consoleAllocated = FALSE;
-
 	if (dwReason == DLL_PROCESS_ATTACH) {
-		consoleAllocated = AllocConsole();
+		auto pAddress = reinterpret_cast<uintptr_t>(GetModuleHandle(nullptr)) + pOffset;
 
-		// Only do this if you want to have an infinite loop in the main function
-		CreateThread(nullptr, 0, reinterpret_cast<LPTHREAD_START_ROUTINE>(main), hModule, 0, &dwThreadId);
-
-		// Otherwise, just call main directly like so
-		// main(hModule);
-	}
-	else if (dwReason == DLL_PROCESS_DETACH) {
-		if (consoleAllocated) {
-			FreeConsole();
+		// The first byte is 0F which is the opcode for the instruction
+		// If it's not 0F, the game has been updated and the offset is no longer valid
+		if (*reinterpret_cast<uint8_t*>(pAddress) != 0x0F) {
+			MessageBoxA(nullptr, "DevCheckBypass isn't compatible with this game version!", "Error", MB_ICONERROR);
+			return FALSE;
 		}
 
-		// If you didn't start a new thread in the DLL_PROCESS_ATTACH, you can deinitialize here
-		// otherwise, you should deinitalize in the main function
+		// Patch to nops, need to replace 6 bytes as the original instruction is 6 bytes long
+		DWORD oldProtect;
+		if (!VirtualProtect(reinterpret_cast<void*>(pAddress), 6, PAGE_EXECUTE_READWRITE, &oldProtect)) {
+			MessageBoxA(nullptr, "Failed to change memory protection!", "Error", MB_ICONERROR);
+			return FALSE;
+		}
+
+		// Nop the instruction
+		memset(reinterpret_cast<void*>(pAddress), 0x90, 6);
+
+		// Restore the original protection
+		VirtualProtect(reinterpret_cast<void*>(pAddress), 6, oldProtect, &oldProtect);
 	}
 
 	return TRUE;

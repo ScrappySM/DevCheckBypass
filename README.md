@@ -1,23 +1,23 @@
-# Mod Template
+# Dev Check Bypass
 
-This is a DLL mode template for Scrap Mechanic that automatically supports [Carbon Launcher](https://github.com/ScrappySM/CarbonLauncher), other launchers and manual injection.
-It comes with all boilerplate you need, a highly permissive license, and a simple build system. Along with this is industry standard CI/CD practices allowing launchers to automatically download and install your mod.
+When the game Scrap Mechanic is launched with the flag `-dev` it will open a developer console along with hot reloading of Lua files being enabled.
+This mod makes it so that the developer flag is not required to be the same across all players in a multiplayer game meaning you can join a host who doesn't have the flag enabled and still have access to the developer console and hot reloading.
 
-## Usage
+An explanation of how this mod works is available in the [dllmain](dllmain.cpp) file at the top.
 
-1. Press "Use this template" on the GitHub page to create a new repository with this template.
-2. Clone the repository to your computer that you have just created.
-3. Run `rename.bat` and type the desired name of your mod.
-4. Open the project in Visual Studio or any IDE that support the MSBuild system.
-5. Modify `manifest.json` with your mod details.
-6. Make any modifications you like to `dllmain.cpp` and compile the project.
-7. If it works, commit and push your changes to GitHub with a [tagged commit](https://git-scm.com/book/en/v2/Git-Basics-Tagging)!
-8. Go to your releases, find the draft release and press edit then publish! If your repo is public mod launchers can automatically download and install your mod if you request it to be added to their repos!
+## Installation
 
-> [!NOTE]
-> Want to be put on the [Carbon Launcher](https://github.com/ScrappySM/CarbonLauncher) repo? Just ask in the [issues](https://github.com/ScrappySM/CarnonLauncher/issues)!
-> We will be happy to add your mod to our repo as long as it follows the [rules](https://github.com/ScrappySM/CarbonLauncher/blob/main/docs/rules.md)!
+The recommended method of installing this is [Carbon Launcher](https://github.com/ScrappySM/CarbonLauncher) which is maintained by me and will let you simply press download and launch the game!
+However, there are many other ways. Here's a launcher agnostic way of installing this mod:
+- Go to releases and download the latest `.dll` file.
+- Open a tool like Process Hacker/System Informer and find the process of Scrap Mechanic.
+- Inject the `.dll` file as a module into the process.
+- You can also use a tool like [SM-DLL-Injector](https://github.com/QuestionableM/SM-DLL-Injector) maintained by [QuestionableM](https://github.com/QuestionableM) and will let you simply inject any DLL files in a folder called `DllModules`, you could use this project and put the `.dll` file in the folder and it will automatically inject it for you.
+
+## Building
+
+To build this project you will need to have Visual Studio installed and then you can simply open the `.sln` file and press build, it is recommended to build in Release mode as it will be smaller and faster.
 
 ## License
 
-This project is licensed under The Unlicense - see the [LICENSE](LICENSE) file for details, meaning you can do whatever you want with this template! (yes, you can change the license)
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
