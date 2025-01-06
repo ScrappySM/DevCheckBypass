@@ -20,14 +20,6 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Setup VCPKG
-      uses: lukka/run-vcpkg@v11
-      with:
-        vcpkgGitCommitId: aafb8b71554a4590aa5108bdb5005d81d72db6c1
-
-    - name: Integrate vcpkg
-      run: vcpkg integrate install
-
     - name: Add MSBuild to PATH
       uses: microsoft/setup-msbuild@v1.0.2
 
